@@ -14,6 +14,12 @@ import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import clientPromise from "./db";
 
 export const authOptions = {
+  theme: {
+    colorScheme: "light", // "auto" | "dark" | "light"
+    brandColor: "", // Hex color code
+    logo: "/next.svg", // Absolute URL to image
+    buttonText: "" // Hex color code
+  },
   adapter: MongoDBAdapter(clientPromise, {
     collections: {
       Accounts: "accounts",
@@ -24,14 +30,14 @@ export const authOptions = {
     databaseName: process.env.DB_NAME,
   }) as Adapter,
   providers: [
-    GithubProvider({
-      clientId: process.env.GITHUB_ID!,
-      clientSecret: process.env.GITHUB_SECRET!,
-    }),
-    GitlabProvider({
-      clientId: process.env.GITLAB_CLIENT_ID!,
-      clientSecret: process.env.GITLAB_CLIENT_SECRET!,
-    }),
+    // GithubProvider({
+    //   clientId: process.env.GITHUB_ID!,
+    //   clientSecret: process.env.GITHUB_SECRET!,
+    // }),
+    // GitlabProvider({
+    //   clientId: process.env.GITLAB_CLIENT_ID!,
+    //   clientSecret: process.env.GITLAB_CLIENT_SECRET!,
+    // }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
@@ -46,6 +52,11 @@ export const authOptions = {
         },
       },
       from: process.env.EMAIL_FROM,
+       // comment this func in prod (for debug email confirmation)
+      // sendVerificationRequest({ url, identifier }) {
+      //   console.log("Magic link for", identifier, ":", url);
+      // },
+
     }),
   ],
 } satisfies NextAuthOptions;

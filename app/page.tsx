@@ -15,7 +15,7 @@ export default async function Home() {
 
   //If there is no session, the user is redirected to authentication
   if (!session) {
-    redirect("/auth");
+    redirect("/api/auth/signin");
   }
 
   return (
