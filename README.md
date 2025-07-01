@@ -24,7 +24,7 @@ Before you begin, make sure you have installed:
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/MenvielleValen/nextjs-auth-template.git
+git clone https://github.com/Pr0teL/next-saas-template.git
 cd your-project-directory
 
 ```
