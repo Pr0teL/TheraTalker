@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Next App + Next Auth - Template",
-  description: "Authentication template for Next.js applications",
+  title: "Startloom - Next.js SaaS Template",
+  description: "SaaS template for Next.js applications",
 };
 
 export default function RootLayout({

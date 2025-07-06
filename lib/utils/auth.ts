@@ -12,6 +12,8 @@ import { MongoDBAdapter } from "@auth/mongodb-adapter";
 
 //db init
 import clientPromise from "./db";
+import { ObjectId } from "mongodb";
+import { access } from "fs";
 
 export const authOptions = {
   theme: {
@@ -53,10 +55,41 @@ export const authOptions = {
       },
       from: process.env.EMAIL_FROM,
        // comment this func in prod (for debug email confirmation)
-      // sendVerificationRequest({ url, identifier }) {
-      //   console.log("Magic link for", identifier, ":", url);
-      // },
+      sendVerificationRequest({ url, identifier }) {
+        console.log("Magic link for", identifier, ":", url);
+      },
 
     }),
   ],
+  events: {
+    async createUser({ user }) {
+      const client = await clientPromise;
+      const db = client.db(process.env.DB_NAME);
+      const usersCollection = db.collection("users");
+      await usersCollection.updateOne(
+        { _id: new ObjectId(user.id) },
+        {
+          $set: {
+            role: 'user',
+          },
+        }
+      );
+    },
+  },
+  callbacks: {
+    async session({ session, user, token }) {
+      // Получаем пользователя из базы данных по email
+      const client = await clientPromise;
+      const db = client.db(process.env.DB_NAME);
+      const usersCollection = db.collection("users");
+      const dbUser = await usersCollection.findOne({ email: session.user?.email });
+
+      // Добавляем role в сессию
+      if (session.user && dbUser && dbUser.role) {
+        session.user.role = dbUser.role;
+      }
+
+      return session;
+    },
+  },
 } satisfies NextAuthOptions;
