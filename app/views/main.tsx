@@ -1,65 +1,110 @@
 "use client";
 
-import { AuroraText } from "@/components/magicui/aurora-text";
-import { cn } from "@/lib/utils";
-import { ChevronRight } from "lucide-react";
-import { useRef } from "react";
+import { MorphingText } from "@/components/magicui/morphing-text";
+import { Ripple } from "@/components/magicui/ripple";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ChevronRight, MessageCircleQuestion, Speech } from "lucide-react";
+import Link from "next/link";
 
 export function Main() {
-
-    const fadeUpVariants = {
-        initial: {
-            opacity: 0,
-            y: 24,
-        },
-        animate: {
-            opacity: 1,
-            y: 0,
-        },
-    };
-
     return (
-        <section id="hero">
-            <div className="relative h-full overflow-hidden py-14">
-                <div className="container z-10 flex flex-col">
-                    <div className="mt-20 grid grid-cols-1">
-                        <div className="flex flex-col items-center gap-6 pb-8 text-center">
-                            <h1
-                                className="text-balance bg-gradient-to-br from-black from-30% to-black/60 bg-clip-text py-6 text-5xl font-medium leading-none tracking-tighter text-transparent dark:from-white dark:to-white/40 sm:text-6xl md:text-7xl lg:text-8xl"
-                            >
-                                <AuroraText>Start</AuroraText>loom
-                            </h1>
+        <section id="hero" className="py-10 px-4">
+            <div className="container max-w-6xl mx-auto">
+                {/* Заголовок */}
+                <div className="text-center mb-12">
+                    <h1 className="text-4xl sm:text-7xl font-bold tracking-tight text-gray-900 dark:text-white">
+                        TheraTalker
+                    </h1>
+                    <p className="mt-5 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
+                        Сервис психологической поддержки с живыми профессионалами. Без ботов. Без лишних шагов. Только вы и эксперт.
+                    </p>
+                </div>
 
-                            <p
-                                className="text-balance text-lg tracking-tight text-gray-400 md:text-xl"
-                            >
-                                Идеальный шаблон для быстрого создания стартапов/веб‑сервисов.<br />
-                                В основе — Next.js, NextAuth, shadcn/ui и MagicUI.<br />
-                                Запускай не только быстро, но и красиво!
-                            </p>
 
-                            <div
-                                className="flex flex-col gap-4 lg:flex-row"
-                            >
-                                <a
-                                    href="#"
-                                    className={cn(
-                                        // colors
-                                        "bg-black  text-white shadow hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90",
+                {/* Карточки */}
+                {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   
+                    <Link href="/chat-menu?mode=between">
+                        <Card className="group transition-all hover:shadow-xl hover:-translate-y-1 cursor-pointer h-full">
+                            <CardContent className="p-6 space-y-4 flex flex-col justify-between h-full">
+                                <div className="flex items-center gap-3 text-primary">
+                                    <MessageCircleQuestion className="w-6 h-6" />
+                                    <h2 className="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">
+                                        Между строк
+                                    </h2>
+                                </div>
 
-                                        // layout
-                                        "group relative inline-flex h-9 w-full items-center justify-center gap-2 overflow-hidden whitespace-pre rounded-md px-4 py-2 text-base font-semibold tracking-tighter focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 md:flex",
+                                <div className="text-muted-foreground text-sm leading-relaxed space-y-2">
+                                    <p>
+                                        Сомневаетесь в подтексте переписки? Отправьте фрагмент или пересказ —
+                                        психолог поможет увидеть скрытые смыслы и подобрать верную реакцию.
+                                    </p>
+                                    <ul className="list-disc list-inside space-y-1">
+                                        <li>Анализ эмоционального фона и ролевых паттернов</li>
+                                        <li>Расшифровка возможных манипуляций и токсичных элементов</li>
+                                        <li>Советы по формулировке ответов и выстраиванию границ</li>
+                                    </ul>
+                                    <p className="font-medium pt-2">
+                                        Один запрос — один развернутый ответ.
+                                    </p>
+                                </div>
 
-                                        // animation
-                                        "transform-gpu ring-offset-current transition-all duration-300 ease-out hover:ring-2 hover:ring-primary hover:ring-offset-2",
-                                    )}
+                                <Button
+                                    variant="outline"
+                                    className="mt-6 w-fit group-hover:bg-primary group-hover:text-white transition"
                                 >
-                                    Документация
-                                    <ChevronRight className="size-4 translate-x-0 transition-all duration-300 ease-out group-hover:translate-x-1" />
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                                    Начать <ChevronRight className="ml-2 w-4 h-4" />
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </Link>
+
+                    
+                    <Link href="/chat-menu?mode=vent">
+                        <Card className="group transition-all hover:shadow-xl hover:-translate-y-1 cursor-pointer h-full">
+                            <CardContent className="p-6 space-y-4 flex flex-col justify-between h-full">
+                                <div className="flex items-center gap-3 text-primary">
+                                    <Speech className="w-6 h-6" />
+                                    <h2 className="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">
+                                        Выговориться
+                                    </h2>
+                                </div>
+
+                                <div className="text-muted-foreground text-sm leading-relaxed space-y-2">
+                                    <p>
+                                        Если переполняет тревога или грусть — просто расскажите, что происходит. Психолог выслушает и поможет справиться с переживаниями.
+                                    </p>
+                                    <ul className="list-disc list-inside space-y-1">
+                                        <li>Без осуждения и оценки</li>
+                                        <li>С вниманием и теплом</li>
+                                        <li>С фокусом на ваше состояние</li>
+                                    </ul>
+                                    <p className="font-medium pt-2">
+                                        Один запрос — один развернутый ответ.
+                                    </p>
+                                </div>
+
+                                <Button
+                                    variant="outline"
+                                    className="mt-6 w-fit group-hover:bg-primary group-hover:text-white transition"
+                                >
+                                    Начать <ChevronRight className="ml-2 w-4 h-4" />
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </Link>
+                </div> */}
+                <Ripple className="opacity-80"/>
+                <div className="text-center">
+                    <Link href="/chat-menu">
+                    <Button
+                        // variant="outline"
+                        // className=""
+                    >
+                       Написать специалисту <ChevronRight className="ml-2 w-4 h-4" />
+                    </Button>
+                    </Link>
                 </div>
             </div>
         </section>

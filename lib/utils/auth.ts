@@ -18,9 +18,9 @@ import { access } from "fs";
 export const authOptions = {
   theme: {
     colorScheme: "light", // "auto" | "dark" | "light"
-    brandColor: "", // Hex color code
-    logo: "/next.svg", // Absolute URL to image
-    buttonText: "" // Hex color code
+    brandColor: "#7b39ed", // Hex color code
+    logo: "/TheraTalkerFullLogo.png", // Absolute URL to image
+    buttonText: ""
   },
   adapter: MongoDBAdapter(clientPromise, {
     collections: {
@@ -44,22 +44,22 @@ export const authOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
-    EmailProvider({
-      server: {
-        host: process.env.EMAIL_SERVER_HOST,
-        port: process.env.EMAIL_SERVER_PORT,
-        auth: {
-          user: process.env.EMAIL_SERVER_USER,
-          pass: process.env.EMAIL_SERVER_PASSWORD,
-        },
-      },
-      from: process.env.EMAIL_FROM,
-       // comment this func in prod (for debug email confirmation)
-      sendVerificationRequest({ url, identifier }) {
-        console.log("Magic link for", identifier, ":", url);
-      },
+    // EmailProvider({
+    //   server: {
+    //     host: process.env.EMAIL_SERVER_HOST,
+    //     port: process.env.EMAIL_SERVER_PORT,
+    //     auth: {
+    //       user: process.env.EMAIL_SERVER_USER,
+    //       pass: process.env.EMAIL_SERVER_PASSWORD,
+    //     },
+    //   },
+    //   from: process.env.EMAIL_FROM,
+    //    // comment this func in prod (for debug email confirmation)
+    //   sendVerificationRequest({ url, identifier }) {
+    //     console.log("Magic link for", identifier, ":", url);
+    //   },
 
-    }),
+    // }),
   ],
   events: {
     async createUser({ user }) {
@@ -71,6 +71,7 @@ export const authOptions = {
         {
           $set: {
             role: 'user',
+            tokens: 150
           },
         }
       );
@@ -87,6 +88,7 @@ export const authOptions = {
       // Добавляем role в сессию
       if (session.user && dbUser && dbUser.role) {
         session.user.role = dbUser.role;
+        session.user.tokens = dbUser.tokens ? dbUser.tokens : 150;
       }
 
       return session;
