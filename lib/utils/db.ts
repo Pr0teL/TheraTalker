@@ -8,7 +8,7 @@ if (!process.env.DB_NAME) {
   throw new Error('Invalid/Missing environment variable: "DB_NAME"');
 }
 
-const uri = `${process.env.MONGODB_URL}/${process.env.DB_NAME}`;
+const uri = `${process.env.MONGODB_URL}`;
 const options = {};
 
 let clientPromise: Promise<MongoClient>;
