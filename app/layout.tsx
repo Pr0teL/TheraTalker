@@ -9,9 +9,41 @@ import { authOptions } from "@/lib/utils/auth";
 
 const inter = Inter({ subsets: ["latin"] });
 
+// export const metadata: Metadata = {
+//   title: "TheraTalker",
+//   description: "Твой профессиональный личный психолог",
+// };
+
 export const metadata: Metadata = {
   title: "TheraTalker",
   description: "Твой профессиональный личный психолог",
+  keywords: [
+    "психолог",
+    "поддержка",
+    "анонимное обращение",
+    "психолог онлайн",
+    "сообщение психологу",
+    "theratalker",
+    "тераталкер",
+    "психологическая помощь",
+    "консультация психолога",
+  ],
+  openGraph: {
+    title: "TheraTalker",
+    description: "Твой профессиональный личный психолог",
+  },
+  metadataBase: new URL("https://theratalker.ru"),
+  icons: [
+    { rel: "icon", url: "/favicon.ico", sizes: "any" },
+    { rel: "icon", url: "/favicon-96x96.png", type: "image/png", sizes: "96x96" },
+    { rel: "icon", url: "/favicon.svg", type: "image/svg+xml" },
+    { rel: "shortcut icon", url: "/favicon.ico" },
+    { rel: "apple-touch-icon", url: "/apple-touch-icon.png", sizes: "180x180" },
+  ],
+  manifest: "/site.webmanifest",
+  appleWebApp: {
+    title: "TheraTalker",
+  },
 };
 
 export default async function RootLayout({

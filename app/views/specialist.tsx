@@ -100,7 +100,7 @@ export function Specialist() {
     };
 
     return (
-        <div className="h-[calc(100dvh-80px)] flex flex-col md:flex-row divide-y md:divide-x md:divide-y-0 border-t w-full">
+        <div className="h-[90dvh] flex flex-col md:flex-row divide-y md:divide-x md:divide-y-0 border-t w-full">
             {/* Список чатов */}
             <div
                 className={`${selectedChat ? "hidden md:block" : "block"

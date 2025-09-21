@@ -32,7 +32,6 @@ interface Chat {
   lastAuthorType?: "user" | "specialist" | null;
 }
 
-
 const modeInfo = {
   between: {
     title: "Между строк",
@@ -110,6 +109,7 @@ export default function ChatMenu() {
   const [pendingMessage, setPendingMessage] = useState("");
   const [userMessageLimit, setUserMessageLimit] = useState(1);
   const [notEnoughOpen, setNotEnoughOpen] = useState(false);
+  const [showNewSession, setShowNewSession] = useState(false); // для мобилок
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const searchParams = useSearchParams();
@@ -118,20 +118,17 @@ export default function ChatMenu() {
 
   const { tokens, setTokens } = useTokens();
 
-  // Редирект на авторизацию
   useEffect(() => {
     if (status === "unauthenticated") {
       signIn(undefined, { callbackUrl: window.location.href });
     }
   }, [status]);
 
-  // Прочитать mode из URL
   useEffect(() => {
     const m = searchParams.get("mode");
     if (m === "between" || m === "vent") setMode(m);
   }, [searchParams]);
 
-  // Загрузить чаты
   useEffect(() => {
     if (status !== "authenticated") return;
     setLoadingChats(true);
@@ -142,7 +139,6 @@ export default function ChatMenu() {
       .finally(() => setLoadingChats(false));
   }, [status]);
 
-  // Загрузить сообщения текущего чата
   useEffect(() => {
     if (!selectedChat) return;
     setLoadingMessages(true);
@@ -183,14 +179,12 @@ export default function ChatMenu() {
   };
   const handlePay = async () => {
     try {
-      // создаём чат
       const resChat = await fetch("/api/chats", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mode }),
       });
       const newChat: Chat = await resChat.json();
-      // добавляем первое сообщение
       await fetch(`/api/chats/${newChat._id}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -202,13 +196,9 @@ export default function ChatMenu() {
         }),
       });
       setChats(prev => sortChats([{ ...newChat, lastAuthorType: 'user', lastMessage: question }, ...prev]));
-      if (mode === "vent") {
-        setTokens(tokens - 490);
-      }
-      else if (mode === "between") {
-        setTokens(tokens - 590);
-      }
+      setTokens(tokens - (mode === "vent" ? 490 : 590));
       setStep("done");
+      setShowNewSession(false); // закрываем мобильный диалог после создания
     } catch {
       setError("Ошибка создания чата");
       setStep("input");
@@ -222,21 +212,16 @@ export default function ChatMenu() {
   };
   const handleSend = async () => {
     if (!selectedChat || !sendMessage.trim()) return;
-
     if (tokens < 249) {
       setNotEnoughOpen(true);
       return;
     }
-    // Показываем окно оплаты вместо немедленной отправки
     setPendingMessage(sendMessage);
     setPayMessageOpen(true);
   };
   const handlePayAndSend = async () => {
     setSending(true);
     try {
-      // Здесь должна быть интеграция с оплатой (заглушка)
-      // await payForMessage(249);
-      // После успешной оплаты отправляем сообщение
       const res = await fetch(`/api/chats/${selectedChat!._id}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -264,7 +249,7 @@ export default function ChatMenu() {
       setSendMessage("");
       setPayMessageOpen(false);
       setPendingMessage("");
-      setUserMessageLimit((prev) => Math.max(prev - 1, 0)); // уменьшаем лимит
+      setUserMessageLimit((prev) => Math.max(prev - 1, 0));
     } catch {
       // обработка ошибки
     }
@@ -273,7 +258,7 @@ export default function ChatMenu() {
 
   return (
     <>
-      {/* Диалог создания */}
+      {/* Диалоги создания и оплаты (как у тебя были) */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-md p-6">
           {step === "input" && (
@@ -332,12 +317,11 @@ export default function ChatMenu() {
                   </span>
                 </div>
               </div>
-              {/* тут ваш UI оплаты */}
               <DialogFooter className="flex gap-2">
-                <Button variant="outline" onClick={() => setStep("input")} className="w-1/2">
+                <Button variant="outline" onClick={() => setStep("input")} className="md:w-1/2">
                   Назад
                 </Button>
-                <Button onClick={handlePay} className="w-1/2">Оплатить</Button>
+                <Button onClick={handlePay} className="md:w-1/2">Оплатить</Button>
               </DialogFooter>
             </>
           )}
@@ -359,7 +343,6 @@ export default function ChatMenu() {
         </DialogContent>
       </Dialog>
 
-      {/* Диалог оплаты сообщения */}
       <Dialog open={payMessageOpen} onOpenChange={setPayMessageOpen}>
         <DialogContent className="max-w-md p-6">
           <DialogHeader>
@@ -371,12 +354,11 @@ export default function ChatMenu() {
           <div className="my-4 text-sm text-muted-foreground">
             После оплаты сообщение будет отправлено психологу.
           </div>
-          {/* Здесь ваш UI оплаты */}
           <DialogFooter className="flex gap-2">
-            <Button variant="outline" onClick={() => setPayMessageOpen(false)} className="w-1/2">
+            <Button variant="outline" onClick={() => setPayMessageOpen(false)} className="md:w-1/2">
               Отмена
             </Button>
-            <Button onClick={handlePayAndSend} className="w-1/2" disabled={sending}>
+            <Button onClick={handlePayAndSend} className="md:w-1/2" disabled={sending}>
               Оплатить и отправить
             </Button>
           </DialogFooter>
@@ -391,15 +373,11 @@ export default function ChatMenu() {
               Для отправки сообщения требуется пополнить токены <span className="font-bold text-primary inline-flex items-center"><Zap className="h-3 w-3" /></span>.
             </DialogDescription>
           </DialogHeader>
-          {/* <div className="my-4 text-sm text-muted-foreground">
-            После оплаты сообщение будет отправлено психологу.
-          </div> */}
-          {/* Здесь ваш UI оплаты */}
           <DialogFooter className="flex gap-2">
-            <Button variant="outline" onClick={() => setNotEnoughOpen(false)} className="w-1/2">
+            <Button variant="outline" onClick={() => setNotEnoughOpen(false)} className="md:w-1/2">
               Закрыть
             </Button>
-            <Link href="/purchase" className="w-1/2">
+            <Link href="/purchase" className="md:w-1/2">
               <Button className="w-full" >
                 Пополнить
               </Button>
@@ -409,43 +387,85 @@ export default function ChatMenu() {
       </Dialog>
 
       <div className="min-h-0 flex flex-col md:flex-row bg-white dark:bg-black overflow-hidden md:h-[calc(100dvh-80px)]">
-        {/* Левая панель (без изменений) */}
-        <div className="w-full md:w-1/2 flex-1 flex flex-col justify-center px-2 py-4 md:px-0 md:py-0 border-b md:border-b-0 md:border-r border-muted-foreground/20 bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-zinc-900 dark:via-black dark:to-zinc-900">
-          <div className="max-w-lg mx-auto w-full p-4 md:p-8 rounded-2xl shadow-xl bg-white/90 dark:bg-zinc-900/90 flex flex-col gap-6 md:gap-8">
-            <h2 className="text-2xl md:text-3xl font-extrabold mb-2 text-center">Новый запрос психологу</h2>
-            <div className="flex gap-2 md:gap-4 justify-center">
+
+        {/* Desktop: Левая панель */}
+        <div className="hidden md:flex w-1/2 flex-col justify-center px-0 py-0 border-r border-muted-foreground/20 
+                        bg-gradient-to-br from-gray-50 via-white to-blue-50 
+                        dark:from-zinc-900 dark:via-black dark:to-zinc-900">
+          <div className="max-w-lg mx-auto w-full p-8 rounded-2xl shadow-xl bg-white/90 dark:bg-zinc-900/90 flex flex-col gap-8">
+            <h2 className="text-3xl font-extrabold mb-2 text-center">Новый запрос психологу</h2>
+            <div className="flex gap-4 justify-center">
               <button
-                className={`flex flex-col items-center gap-1 px-3 py-2 md:px-5 md:py-3 rounded-xl border transition-all shadow-sm ${mode === "between"
+                className={`flex flex-col items-center gap-1 px-5 py-3 rounded-xl border transition-all shadow-sm ${mode === "between"
                   ? "bg-primary/10 border-primary text-primary scale-105"
                   : "bg-gray-100 dark:bg-zinc-800 border-transparent text-muted-foreground hover:bg-primary/5"}`}
                 onClick={() => setMode("between")}
               >
-                <MessageCircleQuestion className="w-6 h-6 md:w-7 md:h-7 mb-1" />
-                <span className="font-semibold text-xs md:text-sm">Между строк</span>
+                <MessageCircleQuestion className="w-7 h-7 mb-1" />
+                <span className="font-semibold text-sm">Между строк</span>
               </button>
               <button
-                className={`flex flex-col items-center gap-1 px-3 py-2 md:px-5 md:py-3 rounded-xl border transition-all shadow-sm ${mode === "vent"
+                className={`flex flex-col items-center gap-1 px-5 py-3 rounded-xl border transition-all shadow-sm ${mode === "vent"
                   ? "bg-primary/10 border-primary text-primary scale-105"
                   : "bg-gray-100 dark:bg-zinc-800 border-transparent text-muted-foreground hover:bg-primary/5"}`}
                 onClick={() => setMode("vent")}
               >
-                <Speech className="w-6 h-6 md:w-7 md:h-7 mb-1" />
-                <span className="font-semibold text-xs md:text-sm">Выговориться</span>
+                <Speech className="w-7 h-7 mb-1" />
+                <span className="font-semibold text-sm">Выговориться</span>
               </button>
             </div>
-            <div className="rounded-xl bg-gray-50 dark:bg-zinc-800 border border-muted-foreground/10 p-3 md:p-5 shadow-sm text-xs md:text-base">
-              {modeInfo[mode].desc}
-            </div>
-            <div className="flex justify-center">
-              <Button className="w-full max-w-xs py-2 md:py-3 text-base md:text-lg font-semibold shadow-md" onClick={handleAsk}>
-                Спросить
-              </Button>
-            </div>
+            <div className="mt-4">{modeInfo[mode].desc}</div>
+            <Button className="w-full mt-4" onClick={handleAsk}>
+              Создать чат
+            </Button>
           </div>
         </div>
 
-        {/* Правая часть */}
-        <div className="w-full md:w-1/2 flex-1 flex flex-col bg-white dark:bg-black">
+        {/* Mobile: кнопка + диалог */}
+        <div className="md:hidden p-3 border-b border-muted-foreground/10">
+          <Button className="w-full" onClick={() => setShowNewSession(true)}>
+            Новый запрос психологу
+          </Button>
+        </div>
+
+        <Dialog open={showNewSession} onOpenChange={setShowNewSession}>
+          <DialogContent className="p-0 max-w-lg w-full">
+            <div className="w-full flex flex-col justify-center 
+                            bg-gradient-to-br from-gray-50 via-white to-blue-50 
+                            dark:from-zinc-900 dark:via-black dark:to-zinc-900">
+              <div className="w-full p-4 rounded-none flex flex-col gap-6 bg-white dark:bg-zinc-900">
+                <h2 className="text-2xl font-extrabold mb-2 text-center">Новый запрос психологу</h2>
+                <div className="flex gap-4 justify-center">
+                  <button
+                    className={`flex flex-col items-center gap-1 px-5 py-3 rounded-xl border transition-all shadow-sm ${mode === "between"
+                      ? "bg-primary/10 border-primary text-primary scale-105"
+                      : "bg-gray-100 dark:bg-zinc-800 border-transparent text-muted-foreground hover:bg-primary/5"}`}
+                    onClick={() => setMode("between")}
+                  >
+                    <MessageCircleQuestion className="w-7 h-7 mb-1" />
+                    <span className="font-semibold text-sm">Между строк</span>
+                  </button>
+                  <button
+                    className={`flex flex-col items-center gap-1 px-5 py-3 rounded-xl border transition-all shadow-sm ${mode === "vent"
+                      ? "bg-primary/10 border-primary text-primary scale-105"
+                      : "bg-gray-100 dark:bg-zinc-800 border-transparent text-muted-foreground hover:bg-primary/5"}`}
+                    onClick={() => setMode("vent")}
+                  >
+                    <Speech className="w-7 h-7 mb-1" />
+                    <span className="font-semibold text-sm">Выговориться</span>
+                  </button>
+                </div>
+                <div className="mt-4">{modeInfo[mode].desc}</div>
+                <Button className="w-full mt-4" onClick={handleAsk}>
+                  Создать чат
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Правая панель с чатами и сообщениями — оставляешь как есть */}
+        <div className="w-full md:w-1/2  flex flex-col bg-white dark:bg-black md:flex md:h-full h-[calc(90dvh-80px)]">
           {selectedChat ? (
             <>
               <div className="sticky top-0 z-10 bg-white dark:bg-black pt-3 pb-2 px-3 md:px-6 border-b border-muted-foreground/10 flex items-center gap-3">
