@@ -539,9 +539,9 @@ export default function ChatMenu() {
                     <Button
                       onClick={handleSend}
                       disabled={!sendMessage.trim() || sending || userMessageLimit <= 0}
-                      className="w-full sm:w-auto"
+                      className="w-full sm:w-auto gap-1"
                     >
-                      Отправить
+                      Отправить - 249<Zap className="inline-block h-2 w-2" />
                     </Button>
                   </div>
                 </div>

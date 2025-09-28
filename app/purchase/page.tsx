@@ -2,12 +2,13 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Zap } from "lucide-react";
+import { ChevronLeft, Zap } from "lucide-react";
 import { useSession, signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Spinner from "@/components/ui/spinner";
 import { useTokens } from "@/components/token-provider";
 import { toast, Toaster } from "sonner";
+import Link from "next/link";
 
 export default function Purchase() {
   const searchParams = useSearchParams();
@@ -97,11 +98,19 @@ export default function Purchase() {
           </Card>
         ))}
       </div>
-      <span className="mt-10 text-sm text-muted-foreground text-center max-w-xl">
+      <span className="mt-10 text-sm text-muted-foreground text-center max-w-xl mb-4">
         Все покупки токенов являются окончательными и возврату не подлежат. В
         случае возникновения технических проблем с сервисом, пожалуйста,
         обратитесь за помощью в нашу службу поддержки.
       </span>
+      <Link href={'/chat-menu'}>
+      <Button
+        variant="outline"
+        size="sm"
+      >
+        <ChevronLeft className="w-4 h-4" /> Назад к чатам
+      </Button>
+      </Link>
       <Toaster />
     </div>
   );

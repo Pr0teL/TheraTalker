@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, MessageCircleQuestion, Speech } from "lucide-react";
+import { Send, MessageCircleQuestion, Speech, ChevronLeft } from "lucide-react";
 import Spinner from "@/components/ui/spinner";
 
 interface Message {
@@ -42,6 +42,7 @@ export function Specialist() {
     const [message, setMessage] = useState("");
     const scrollRef = useRef<HTMLDivElement>(null);
 
+    // Загрузка списка чатов
     useEffect(() => {
         fetch("/api/chats?status=open")
             .then((res) => res.json())
@@ -49,24 +50,32 @@ export function Specialist() {
             .finally(() => setLoading(false));
     }, []);
 
-    useEffect(() => {
-        if (!selectedChat) return;
-        fetch(`/api/chats/${selectedChat._id}/messages`)
-            .then((res) => res.json())
-            .then((msgs: Message[]) => {
-                setSelectedChat((prev) => prev ? { ...prev, messages: msgs } : null);
-            });
-    }, [selectedChat?._id]);
-
+    // Скролл вниз при новых сообщениях
     useEffect(() => {
         scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
     }, [selectedChat?.messages]);
 
+    // Выбор чата и загрузка сообщений
+    const handleSelectChat = (chat: Chat) => {
+        if (selectedChat?._id === chat._id) {
+            // Повторный клик — снимаем выбор
+            setSelectedChat(null);
+        } else {
+            // Новый чат
+            setSelectedChat({ ...chat, messages: [] }); // сразу отображаем окно
+            fetch(`/api/chats/${chat._id}/messages`)
+                .then((res) => res.json())
+                .then((msgs: Message[]) => {
+                    setSelectedChat((prev) => prev ? { ...prev, messages: msgs } : null);
+                });
+        }
+    };
+
+    // Отправка сообщения
     const handleSend = async () => {
         if (!selectedChat || !message.trim()) return;
         setSending(true);
 
-        // Отправляем сообщение
         const res = await fetch(`/api/chats/${selectedChat._id}/messages`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -75,18 +84,16 @@ export function Specialist() {
 
         const newMessage: Message = await res.json();
 
-        // Обновляем сообщения и lastAuthorType в выбранном чате
         setSelectedChat((prev) =>
             prev
                 ? {
                     ...prev,
                     messages: [...(prev.messages || []), newMessage],
-                    lastAuthorType: "specialist", // обновляем
+                    lastAuthorType: "specialist",
                 }
                 : null
         );
 
-        // Обновляем список чатов (lastAuthorType)
         setChats((prev) =>
             prev.map((c) =>
                 c._id === selectedChat._id
@@ -124,8 +131,8 @@ export function Specialist() {
                             .map((chat) => (
                                 <button
                                     key={chat._id}
-                                    onClick={() => setSelectedChat(chat)}
-                                    className={`w-full text-left p-3 rounded-lg border shadow-sm bg-white hover:bg-gray-50 dark:bg-zinc-900 dark:hover:bg-zinc-800 transition ${selectedChat?._id === chat._id ? "border-primary" : "border-muted"
+                                    onClick={() => handleSelectChat(chat)}
+                                    className={`w-full mb-1 text-left p-3 rounded-lg border shadow-sm bg-white hover:bg-gray-50 dark:bg-zinc-900 dark:hover:bg-zinc-800 transition ${selectedChat?._id === chat._id ? "border-primary" : "border-muted"
                                         }`}
                                 >
                                     <div className="flex justify-between items-center">
@@ -160,12 +167,12 @@ export function Specialist() {
                                 {modeInfo[selectedChat.mode].title}
                             </h2>
                             <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
                                 onClick={() => setSelectedChat(null)}
                                 className="md:hidden"
                             >
-                                Назад
+                               <ChevronLeft className="w-4 h-4" /> Назад
                             </Button>
                         </div>
 
@@ -233,5 +240,4 @@ export function Specialist() {
             </div>
         </div>
     );
-
 }
